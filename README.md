@@ -235,7 +235,7 @@ A few things worth knowing, all visible in that response:
 
 ## Give the API to an AI assistant
 
-The contract is written to be read by an agent. No package to install: give your assistant two things.
+The contract is written to be read by an agent. Give your assistant two things, or use the official MCP server below.
 
 1. The address of the contract: `https://jam-jam.org/api/v1/openapi.json`
 2. An API key limited to the scopes the task needs (for example `convert:read` and `convert:write` to convert, plus `carnet:write` to file the result in your notebook). Pass it as `Authorization: Bearer <key>`; do not paste it in a shared conversation you do not control.
@@ -245,6 +245,24 @@ A prompt that works well:
 > Read https://jam-jam.org/api/v1/openapi.json. Call GET /formats first and only use ids with served=true. Send an Idempotency-Key on every write. On a 429, wait for Retry-After. Use GET /me/usage to check my quota and scopes before starting.
 
 Revoke the key in the app when the task is done.
+
+### Official MCP server
+
+For assistants that speak the [Model Context Protocol](https://modelcontextprotocol.io) (Claude Desktop, Claude Code, Cursor and other MCP clients), the official server [`@jam-jam/convert-mcp`](https://www.npmjs.com/package/@jam-jam/convert-mcp) exposes the same API as typed tools: conversion, your notebook (read and write) and public profiles. It only offers the tools that the scopes of your key allow.
+
+```json
+{
+  "mcpServers": {
+    "jam-jam": {
+      "command": "npx",
+      "args": ["-y", "@jam-jam/convert-mcp"],
+      "env": { "JAM_JAM_API_KEY": "jj_live_..." }
+    }
+  }
+}
+```
+
+The key goes in the environment, never on a command line. Full list of tools and options: the [package page](https://www.npmjs.com/package/@jam-jam/convert-mcp) and https://jam-jam.org/developers/.
 
 ## Errors, retries, retention
 
