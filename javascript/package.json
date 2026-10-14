@@ -1,0 +1,17 @@
+{
+  "name": "jam-jam-api-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Examples for the Jam Jam REST API (Node 20+, no dependency).",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "formats": "node list-formats.mjs",
+    "usage": "node usage.mjs",
+    "convert": "node convert.mjs text",
+    "notebook": "node notebook.mjs list"
+  }
+}
