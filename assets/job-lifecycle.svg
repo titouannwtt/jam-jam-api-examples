@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 650" width="1280" height="650" role="img" aria-labelledby="t d">
+  <title id="t">The life of a conversion job</title>
+  <desc id="d">Send a file, a URL or text to POST /jobs. The job answers 202 with an id, then goes from queued to running to done. Follow it by polling GET /jobs/{id} with Retry-After, or by Server-Sent Events on GET /jobs/{id}/events. When it is done, download the result file or the songbook JSON. Files and results expire 24 hours after the job was created.</desc>
+  <defs>
+    <style>
+      .sans { font-family: Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .flow { stroke-dasharray: 2 9; stroke-linecap: round; animation: dash 1.3s linear infinite; }
+      .walk { animation: walk 7s ease-in-out infinite; }
+      .hop { animation: hop 0.7s ease-in-out infinite; }
+      .pulse { animation: pulse 2s ease-in-out infinite; }
+      @keyframes dash { to { stroke-dashoffset: -22; } }
+      @keyframes walk { 0%, 12% { transform: translateX(0); } 40%, 55% { transform: translateX(120px); } 85%, 100% { transform: translateX(238px); } }
+      @keyframes hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+      @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+    </style>
+    <pattern id="ruled" width="1280" height="34" patternUnits="userSpaceOnUse" y="20">
+      <rect x="0" y="33" width="1280" height="1" fill="#E4DCCA"/>
+    </pattern>
+    <clipPath id="card"><rect width="1280" height="650" rx="28"/></clipPath>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#D17A35"/>
+    </marker>
+    <marker id="arrowInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#8A8074"/>
+    </marker>
+    <!-- Mini Jam Jam mushroom, 60 x 60, hand-drawn style with a thick outline -->
+    <g id="shroom" stroke="#2D2620" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M19 31C17 43 18 52 23 55H37C42 52 43 43 41 31Z" fill="#FBF7EE"/>
+      <path d="M4 31C3 9 57 9 56 31C46 35 14 35 4 31Z" fill="#C73E3F"/>
+      <g stroke="none" fill="#FFFFFF">
+        <ellipse cx="18" cy="21" rx="4.5" ry="3.8"/>
+        <ellipse cx="33" cy="15" rx="4.5" ry="3.4"/>
+        <ellipse cx="46" cy="24" rx="3.6" ry="3.2"/>
+        <circle cx="29" cy="27" r="2.2"/>
+      </g>
+      <g stroke="none">
+        <circle cx="26" cy="41" r="2" fill="#2D2620"/>
+        <circle cx="34" cy="41" r="2" fill="#2D2620"/>
+        <circle cx="22.5" cy="45" r="2.2" fill="#E8838A"/>
+        <circle cx="37.5" cy="45" r="2.2" fill="#E8838A"/>
+      </g>
+      <path d="M27.5 45.5Q30 48 32.5 45.5" fill="none" stroke-width="2"/>
+    </g>
+    <g id="i-file" fill="none" stroke="#2D2620" stroke-width="2.5" stroke-linejoin="round">
+      <path d="M0 0H16L24 8V30H0Z" fill="#FBF7EE"/><path d="M16 0V8H24"/>
+      <path d="M5 15H19M5 21H15" stroke-linecap="round"/>
+    </g>
+    <g id="i-link" fill="none" stroke="#2D2620" stroke-width="2.6" stroke-linecap="round">
+      <path d="M11 17L17 11"/>
+      <path d="M9 13L5 17A5 5 0 0 0 13 25L17 21"/>
+      <path d="M19 15L23 11A5 5 0 0 0 15 3L11 7"/>
+    </g>
+    <g id="i-text" fill="none" stroke="#2D2620" stroke-width="2.6" stroke-linecap="round">
+      <path d="M2 4H24M13 4V28"/>
+      <path d="M8 28H18"/>
+    </g>
+  </defs>
+
+  <g clip-path="url(#card)">
+    <rect width="1280" height="650" fill="#F5F0E6"/>
+    <rect width="1280" height="650" fill="url(#ruled)"/>
+    <rect x="30" y="0" width="2" height="650" fill="#C73E3F" opacity="0.35"/>
+  </g>
+  <rect x="1" y="1" width="1278" height="648" rx="27" fill="none" stroke="#D9D0BC" stroke-width="2"/>
+
+  <g class="sans">
+    <text x="56" y="70" font-size="34" font-weight="800" fill="#2D2620">One job, from a song to a songbook</text>
+    <text x="56" y="106" font-size="20" fill="#5C544A">Send a source, follow the job while it works, then download what it made.</text>
+  </g>
+
+  <!-- Stage headers -->
+  <g class="sans" font-size="20" font-weight="800" fill="#2D2620">
+    <g transform="translate(56 150)"><circle cx="15" cy="0" r="15" fill="#2D2620"/><text x="15" y="6" font-size="16" fill="#F5F0E6" text-anchor="middle">1</text><text x="40" y="7">Send</text></g>
+    <g transform="translate(296 150)"><circle cx="15" cy="0" r="15" fill="#2D2620"/><text x="15" y="6" font-size="16" fill="#F5F0E6" text-anchor="middle">2</text><text x="40" y="7">Start</text></g>
+    <g transform="translate(546 150)"><circle cx="15" cy="0" r="15" fill="#2D2620"/><text x="15" y="6" font-size="16" fill="#F5F0E6" text-anchor="middle">3</text><text x="40" y="7">Follow</text></g>
+    <g transform="translate(916 150)"><circle cx="15" cy="0" r="15" fill="#2D2620"/><text x="15" y="6" font-size="16" fill="#F5F0E6" text-anchor="middle">4</text><text x="40" y="7">Download</text></g>
+  </g>
+
+  <!-- 1. Inputs -->
+  <g>
+    <g transform="translate(56 186)">
+      <rect width="200" height="96" rx="14" fill="#FBF7EE" stroke="#D9D0BC" stroke-width="2"/>
+      <use href="#i-file" x="18" y="16"/>
+      <text x="56" y="40" class="sans" font-size="21" font-weight="800" fill="#2D2620">File</text>
+      <text x="18" y="76" class="mono" font-size="14" fill="#5C544A">multipart/form-data</text>
+    </g>
+    <g transform="translate(56 296)">
+      <rect width="200" height="96" rx="14" fill="#FBF7EE" stroke="#D9D0BC" stroke-width="2"/>
+      <use href="#i-link" x="16" y="16"/>
+      <text x="56" y="40" class="sans" font-size="21" font-weight="800" fill="#2D2620">URL</text>
+      <text x="18" y="76" class="mono" font-size="14" fill="#5C544A">application/json</text>
+    </g>
+    <g transform="translate(56 406)">
+      <rect width="200" height="96" rx="14" fill="#FBF7EE" stroke="#D9D0BC" stroke-width="2"/>
+      <use href="#i-text" x="16" y="15"/>
+      <text x="56" y="40" class="sans" font-size="21" font-weight="800" fill="#2D2620">Text</text>
+      <text x="18" y="76" class="mono" font-size="14" fill="#5C544A">application/json</text>
+    </g>
+  </g>
+  <g fill="none" stroke="#D17A35" stroke-width="2.5">
+    <path class="flow" d="M258 234C276 234 270 330 288 337" marker-end="url(#arrow)"/>
+    <path class="flow" d="M258 344H288" marker-end="url(#arrow)"/>
+    <path class="flow" d="M258 454C276 454 270 358 288 351" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- 2. POST /jobs -->
+  <g transform="translate(296 186)">
+    <rect width="210" height="316" rx="14" fill="#FBF7EE" stroke="#2D2620" stroke-width="2.5"/>
+    <text x="18" y="44" class="mono" font-size="22" font-weight="700" fill="#2D2620">POST /jobs</text>
+    <rect x="18" y="60" width="174" height="1.5" fill="#D9D0BC"/>
+    <rect x="18" y="78" width="54" height="30" rx="8" fill="#4DAA75"/>
+    <text x="45" y="99" class="mono" font-size="16" font-weight="700" fill="#2D2620" text-anchor="middle">202</text>
+    <text x="82" y="99" class="sans" font-size="17" fill="#2D2620">job with an <tspan class="mono" font-weight="700">id</tspan></text>
+    <text x="18" y="146" class="mono" font-size="15" font-weight="700" fill="#2D2620">Idempotency-Key</text>
+    <text x="18" y="170" class="sans" font-size="15" fill="#5C544A">on every write. A replay</text>
+    <text x="18" y="190" class="sans" font-size="15" fill="#5C544A">answers 200, same job,</text>
+    <text x="18" y="210" class="sans" font-size="15" fill="#5C544A">no second charge.</text>
+    <rect x="18" y="232" width="174" height="64" rx="10" fill="#EBE4D4"/>
+    <text x="30" y="258" class="mono" font-size="14" fill="#5C544A">Authorization:</text>
+    <text x="30" y="282" class="mono" font-size="14" fill="#2D2620">Bearer <tspan fill="#C2611F" font-weight="700">jj_live_...</tspan></text>
+  </g>
+  <path class="flow" d="M508 256H540" fill="none" stroke="#D17A35" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- 3. Follow -->
+  <g transform="translate(546 186)">
+    <!-- walking mushroom -->
+    <g class="walk"><g class="hop"><use href="#shroom" transform="translate(20 -6) scale(0.9)"/></g></g>
+    <g class="mono" font-size="16" font-weight="700">
+      <rect x="0" y="50" width="96" height="40" rx="20" fill="#EBE4D4" stroke="#D9D0BC" stroke-width="2"/>
+      <text x="48" y="76" text-anchor="middle" fill="#5C544A">queued</text>
+      <rect x="114" y="50" width="104" height="40" rx="20" fill="#D17A35"/>
+      <text x="166" y="76" text-anchor="middle" fill="#2D2620">running</text>
+      <rect x="236" y="50" width="94" height="40" rx="20" fill="#5C7B5C"/>
+      <text x="283" y="76" text-anchor="middle" fill="#FFFFFF">done</text>
+    </g>
+    <g fill="none" stroke="#8A8074" stroke-width="2">
+      <path d="M97 70H111" marker-end="url(#arrowInk)"/>
+      <path d="M219 70H233" marker-end="url(#arrowInk)"/>
+    </g>
+    <text x="0" y="118" class="sans" font-size="15" fill="#5C544A">or <tspan class="mono" fill="#C73E3F" font-weight="700">failed</tspan> (with a <tspan class="mono">problem</tspan>) or <tspan class="mono" font-weight="700">cancelled</tspan></text>
+
+    <g transform="translate(0 134)">
+      <rect width="330" height="84" rx="14" fill="#FBF7EE" stroke="#D9D0BC" stroke-width="2"/>
+      <text x="18" y="32" class="sans" font-size="18" font-weight="800" fill="#2D2620">Poll</text>
+      <text x="74" y="32" class="mono" font-size="15" fill="#2D2620">GET /jobs/{id}</text>
+      <text x="18" y="62" class="sans" font-size="15" fill="#5C544A">wait <tspan class="mono" font-weight="700" fill="#2D2620">Retry-After</tspan> between two calls</text>
+    </g>
+    <g transform="translate(0 232)">
+      <rect width="330" height="84" rx="14" fill="#FBF7EE" stroke="#D9D0BC" stroke-width="2"/>
+      <text x="18" y="32" class="sans" font-size="18" font-weight="800" fill="#2D2620">or SSE</text>
+      <text x="96" y="32" class="mono" font-size="15" fill="#2D2620">GET /jobs/{id}/events</text>
+      <text x="18" y="62" class="mono" font-size="15" fill="#5C7B5C" font-weight="700">state · done · error · ping</text>
+      <circle class="pulse" cx="306" cy="58" r="6" fill="#4DAA75"/>
+    </g>
+  </g>
+  <path class="flow" d="M878 256H910" fill="none" stroke="#D17A35" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- 4. Download -->
+  <g transform="translate(916 186)">
+    <rect width="308" height="204" rx="14" fill="#FBF7EE" stroke="#2D2620" stroke-width="2.5"/>
+    <text x="18" y="34" class="mono" font-size="16" font-weight="700" fill="#2D2620">GET /jobs/{id}/result</text>
+    <text x="18" y="58" class="sans" font-size="15" fill="#5C544A">main file, or <tspan class="mono">?artifact=&lt;id&gt;</tspan></text>
+    <g class="mono" font-size="15" font-weight="700">
+      <g transform="translate(18 76)">
+        <rect width="56" height="32" rx="8" fill="#C73E3F"/><text x="28" y="21" text-anchor="middle" fill="#FFFFFF">PDF</text>
+        <rect x="64" width="56" height="32" rx="8" fill="#EBE4D4"/><text x="92" y="21" text-anchor="middle" fill="#2D2620">TXT</text>
+        <rect x="128" width="56" height="32" rx="8" fill="#EBE4D4"/><text x="156" y="21" text-anchor="middle" fill="#2D2620">PNG</text>
+        <rect x="192" width="64" height="32" rx="8" fill="#EBE4D4"/><text x="224" y="21" text-anchor="middle" fill="#2D2620">HTML</text>
+      </g>
+      <g transform="translate(18 116)">
+        <rect width="100" height="32" rx="8" fill="#5C7B5C"/><text x="50" y="21" text-anchor="middle" fill="#FFFFFF">ChordPro</text>
+        <rect x="108" width="60" height="32" rx="8" fill="#EBE4D4"/><text x="138" y="21" text-anchor="middle" fill="#2D2620">.lrc</text>
+        <rect x="176" width="60" height="32" rx="8" fill="#EBE4D4"/><text x="206" y="21" text-anchor="middle" fill="#2D2620">.srt</text>
+      </g>
+      <g transform="translate(18 156)">
+        <rect width="78" height="32" rx="8" fill="#D17A35"/><text x="39" y="21" text-anchor="middle" fill="#2D2620">MIDI*</text>
+        <rect x="86" width="118" height="32" rx="8" fill="#C19A6B"/><text x="145" y="21" text-anchor="middle" fill="#2D2620">MusicXML*</text>
+      </g>
+    </g>
+  </g>
+  <g transform="translate(916 404)">
+    <rect width="308" height="98" rx="14" fill="#FBF7EE" stroke="#2D2620" stroke-width="2.5"/>
+    <text x="18" y="32" class="mono" font-size="14" font-weight="700" fill="#2D2620">GET /jobs/{id}/result/songbook</text>
+    <text x="18" y="60" class="sans" font-size="15" fill="#5C544A">The songbook JSON: chords, lyrics</text>
+    <text x="18" y="82" class="sans" font-size="15" fill="#5C544A">and structure, after any successful job.</text>
+  </g>
+
+  <!-- Footer -->
+  <rect x="56" y="534" width="1168" height="1.5" fill="#D9D0BC"/>
+  <g class="sans" font-size="16" fill="#5C544A">
+    <text x="56" y="570"><tspan fill="#2D2620" font-weight="800">*</tspan> Premium. MIDI and MusicXML need a source that carries a melody; <tspan class="mono">.lrc</tspan> and <tspan class="mono">.srt</tspan> need timing.</text>
+    <text x="56" y="600">Uploads and results are deleted 24 h after the job was created (<tspan class="mono" fill="#2D2620">expiresAt</tspan>), then <tspan class="mono" fill="#2D2620">/result*</tspan> answers <tspan class="mono" fill="#C73E3F" font-weight="700">410</tspan>.</text>
+  </g>
+</svg>
