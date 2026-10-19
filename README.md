@@ -12,19 +12,19 @@
 
 ## What is this?
 
-Runnable examples for the [Jam Jam](https://jam-jam.org/) REST API, in `curl`, JavaScript (Node 20+, no dependency) and Python (3.10+, `requests`). The API turns music files, links and text into a songbook (chords, lyrics, structure) or into portable exports, with the same conversion engine as the Jam Jam app.
+Runnable examples for the [Jam Jam](https://jam-jam.org/?utm_source=github&utm_medium=repo&utm_campaign=api-examples) REST API, in `curl`, JavaScript (Node 20+, no dependency) and Python (3.10+, `requests`). The API turns music files, links and text into a songbook (chords, lyrics, structure) or into portable exports, with the same conversion engine as the Jam Jam app.
 
 What comes out: Jam Jam's songbook format, PDF, plain text, ChordPro, PNG, HTML, synced lyrics (`.lrc`, `.srt`), and, from a source that carries a melody, MIDI and MusicXML. The API can also read and write your private notebook (songs and playlists) and read what other accounts have published.
 
 - **Base URL:** `https://jam-jam.org/api/v1`
 - **Contract (OpenAPI 3):** <https://jam-jam.org/api/v1/openapi.json> (source of truth, read it for every field)
-- **Documentation:** <https://jam-jam.org/developers/>
+- **Documentation:** [jam-jam.org/developers](https://jam-jam.org/developers/?utm_source=github&utm_medium=repo&utm_campaign=api-examples)
 
 The examples were written against contract version 0.6.0. If this README and the contract ever disagree, the contract wins.
 
 ## Quick start
 
-**1. Get an API key.** Create a free account at <https://jam-jam.org/>, then open **Settings, API keys** in the app (on the web: <https://jam-jam.org/app/prefs/api-keys>) and create a key. Tick the scopes you need: `convert:read` and `convert:write` are enough for the examples below (details in [API keys and scopes](#api-keys-and-scopes)).
+**1. Get an API key.** Create a free account at [jam-jam.org](https://jam-jam.org/?utm_source=github&utm_medium=repo&utm_campaign=api-examples), then open **Settings, API keys** in the app (on the web: <https://jam-jam.org/app/prefs/api-keys>) and create a key. Tick the scopes you need: `convert:read` and `convert:write` are enough for the examples below (details in [API keys and scopes](#api-keys-and-scopes)).
 
 **2. Load it.** The key starts with `jj_live_` and is shown once. Copy it into `.env`:
 
@@ -262,7 +262,7 @@ For assistants that speak the [Model Context Protocol](https://modelcontextproto
 }
 ```
 
-The key goes in the environment, never on a command line. Full list of tools and options: the [package page](https://www.npmjs.com/package/@jam-jam/convert-mcp) and https://jam-jam.org/developers/.
+The key goes in the environment, never on a command line. Full list of tools and options: the [package page](https://www.npmjs.com/package/@jam-jam/convert-mcp) and [jam-jam.org/developers](https://jam-jam.org/developers/?utm_source=github&utm_medium=repo&utm_campaign=api-examples).
 
 ## Errors, retries, retention
 
