@@ -2,6 +2,8 @@
   <img src="assets/hero.svg" alt="Jam Jam API: turn a song into a songbook with one request. The Jam Jam mushroom plays the ukulele next to a song sheet, a chord diagram and the PDF, ChordPro, MIDI, MusicXML and synced lyrics outputs." width="100%">
 </p>
 
+<p align="center">Part of <b>Jam Jam</b>, a free chord, key and tempo detector: <a href="https://github.com/titouannwtt/jam-jam">overview</a> · <a href="https://jam-jam.org/app/detection">web tool</a> · <a href="https://play.google.com/store/apps/details?id=com.jamjam">Android</a> · <a href="https://testflight.apple.com/join/fx95DYFE">iOS beta</a> · <a href="https://github.com/titouannwtt/jam-jam-assets">models and sounds</a></p>
+
 <p align="center">
   <a href="#quick-start"><b>Quick start</b></a> ·
   <a href="#how-a-job-works"><b>How a job works</b></a> ·
