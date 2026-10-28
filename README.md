@@ -7,6 +7,7 @@
 <p align="center">
   <a href="#quick-start"><b>Quick start</b></a> ·
   <a href="#how-a-job-works"><b>How a job works</b></a> ·
+  <a href="#mastering"><b>Mastering</b></a> ·
   <a href="#api-keys-and-scopes"><b>Keys and scopes</b></a> ·
   <a href="#main-endpoints"><b>Endpoints</b></a> ·
   <a href="#give-the-api-to-an-ai-assistant"><b>AI assistants</b></a>
@@ -16,7 +17,7 @@
 
 Runnable examples for the [Jam Jam](https://jam-jam.org/?utm_source=github&utm_medium=repo&utm_campaign=api-examples) REST API, in `curl`, JavaScript (Node 20+, no dependency) and Python (3.10+, `requests`). The API turns music files, links and text into a songbook (chords, lyrics, structure) or into portable exports, with the same conversion engine as the Jam Jam app.
 
-What comes out: Jam Jam's songbook format, PDF, plain text, ChordPro, PNG, HTML, synced lyrics (`.lrc`, `.srt`), and, from a source that carries a melody, MIDI and MusicXML. The API can also read and write your private notebook (songs and playlists) and read what other accounts have published.
+What comes out: Jam Jam's songbook format, PDF, plain text, ChordPro, PNG, HTML, synced lyrics (`.lrc`, `.srt`), and, from a source that carries a melody, MIDI and MusicXML. The API can also read and write your private notebook (songs and playlists) read what other accounts have published, and [master an audio file](#mastering) on the server.
 
 - **Base URL:** `https://jam-jam.org/api/v1`
 - **Contract (OpenAPI 3):** <https://jam-jam.org/api/v1/openapi.json> (source of truth, read it for every field)
@@ -159,6 +160,65 @@ while job["phase"] not in ("done", "failed", "cancelled"):
 
 The job fields used here: `id`, `phase` (`queued`, `running`, `done`, `failed`, `cancelled`), `percent`, `inputFormat`, `outputFormat`, `expiresAt`, `steps`, `artifacts` (`id`, `kind`, `format`, `mediaType`, `bytes`, `sha256`, `filename`), `problem` (set when `phase` is `failed`) and `links`.
 
+## Mastering
+
+Jam Jam masters your track on the server: it analyses the file, balances the tone, tames sibilance, adjusts the stereo width and brings the level to a loudness target (streaming, podcast, club...), with the same settings as the free web tool at <https://jam-jam.org/app/mastering> (the server render is reproducible, but not bit for bit the browser export). Upload an audio file, pick a preset, download a 48 kHz WAV. On the server, the same file, settings and `engineVersion` give the same output.
+
+- **Input:** WAV, MP3, FLAC, Ogg, AAC, M4A and similar, 200 MB and 10 minutes at most. Mono or stereo (beyond two channels, the first two are used).
+- **Output:** a WAV at 48 kHz, 16-bit (`format=wav-pcm16`, the default) or 32-bit float (`wav-f32`), named `<name>-master.wav`. Kept for 24 hours; downloading again is free.
+- **Presets:** five are built in and read-only, used as `preset=builtin:<id>`: `builtin:balanced`, `builtin:warm`, `builtin:bright`, `builtin:punchy`, `builtin:crushed`. You can save up to 50 of your own (name of 60 characters at most) and use their uuid. Or send the settings inline as `settings`. A render takes exactly one of `preset` and `settings`.
+- **Settings** (`MasteringSettingsV1`): `autoEq`, `lows`, `mids`, `highs`, `deEss`, `width`, `loudness`, `destruct` (each a `value` and `enabled`), a `target` (`streaming`, `apple`, `deezer`, `podcast`, `club`) and `normalize`. Ranges and steps are in `GET /mastering/capabilities`; a value outside its range or off its step answers `422 invalid-settings` with one entry per problem. Example: [`samples/mastering-settings.json`](samples/mastering-settings.json).
+- **Access and quota:** what your account may do, and the render quota, depend on your tier: see <https://jam-jam.org/app/developers>. `GET /mastering/capabilities` with your key tells you (`renderAllowed`, `quota`), and a render answers `X-Mastering-Quota-*` headers.
+- **Idempotency:** `Idempotency-Key` is required on every Mastering write: 16 to 80 characters among `A-Za-z0-9_-` (the examples use a fresh UUID). Replaying it with the same body returns the same result without a second charge.
+
+The flow is the one of a conversion: `POST /mastering/jobs` (`202`), poll `GET /mastering/jobs/{id}` honouring `Retry-After` until `status` is `done` (it goes through `queued`, `decoding`, `analyzing`, `rendering`; the other final states are `failed`, `cancelled` and `expired`), then `GET /mastering/jobs/{id}/result`. The finished job carries a `report` with the loudness before and after. An account has one active render and three waiting at most.
+
+Create a key with `mastering:read` and `mastering:write` (see [API keys and scopes](#api-keys-and-scopes)). `samples/make-test-tone.py` writes a 5-second synthetic WAV, so you can try without your own track.
+
+```sh
+python3 samples/make-test-tone.py                                  # writes samples/test-tone.wav
+curl/09-mastering-capabilities.sh                                  # limits, ranges, built-in presets
+curl/10-mastering-create-preset.sh "My warm preset"                # saves samples/mastering-settings.json, prints the preset id
+curl/11-mastering-render.sh samples/test-tone.wav                  # built-in preset builtin:balanced, prints the job
+curl/11-mastering-render.sh samples/test-tone.wav builtin:warm wav-f32
+curl/11-mastering-render.sh samples/test-tone.wav samples/mastering-settings.json   # custom settings, sent inline
+curl/12-mastering-poll.sh <job_id>                                 # until done, prints the report
+curl/13-mastering-download.sh <job_id>                             # saves ./out/<name>-master.wav
+curl/14-mastering-delete.sh job <job_id>                           # or: preset <preset_id>
+```
+
+```sh
+# Node 20+
+cd javascript
+node mastering.mjs capabilities
+node mastering.mjs master ../samples/test-tone.wav --preset builtin:warm
+node mastering.mjs master song.mp3 --settings ../samples/mastering-settings.json --format wav-f32
+node mastering-batch.mjs ~/Music/mixes --preset builtin:balanced   # a whole folder, one file after the other
+
+# Python 3.10+
+cd python
+python mastering.py capabilities
+python mastering.py create-preset "My warm preset"
+python mastering.py master ../samples/test-tone.wav --preset builtin:warm
+python mastering_batch.py ~/Music/mixes --preset builtin:balanced
+```
+
+The batch scripts skip a file whose `<name>-master.wav` already exists (so you can rerun them after an interruption) and stop at the first `403`, or at a `429` that asks for a long wait.
+
+**Errors.** As everywhere in the API, an error is `application/problem+json` with a stable `code`. The examples print a plain message for:
+
+| Status | `code` | Meaning |
+|---|---|---|
+| 401 | | missing or invalid key |
+| 403 | `insufficient-scope` | the key lacks `mastering:read` or `mastering:write` |
+| 403 | `premium-required` | rendering is not open to your tier; depending on your tier, see <https://jam-jam.org/app/developers> |
+| 409 | `not-ready` | the result is requested before the render is finished |
+| 410 | `expired` | the 24 hours are over |
+| 413, 415, 422 | | file too large, unsupported file, audio over 10 minutes, invalid settings (read `errors[]`), `idempotency-conflict` |
+| 429 | `quota-exhausted` or a rate limit | wait `Retry-After` seconds, do not retry in a loop |
+
+Only master audio you hold the rights over. Documentation: [jam-jam.org/developers](https://jam-jam.org/developers/?utm_source=github&utm_medium=repo&utm_campaign=api-examples). The free tool, in the browser: <https://jam-jam.org/app/mastering>.
+
 ## API keys and scopes
 
 <p align="center"><img src="assets/api-key-scopes.svg" alt="An example key for a conversion script has convert:read and convert:write ticked. It can start, follow and download jobs; the notebook and social endpoints answer 403 insufficient-scope." width="100%"></p>
@@ -175,6 +235,8 @@ The job fields used here: `id`, `phase` (`queued`, `running`, `done`, `failed`, 
 | `carnet:read` | `GET /me/songs*`, `GET /me/playlists*`, `/me/usage` |
 | `carnet:write` | `POST/PUT/PATCH/DELETE` on `/me/songs*` and `/me/playlists*`, `/me/usage` |
 | `social:read` | `GET /users/{handle}*`, `/me/followers`, `/me/following`, `/me/usage` |
+| `mastering:read` | `GET /mastering/presets`, `GET /mastering/jobs/{id}`, `GET /mastering/jobs/{id}/result` |
+| `mastering:write` | `POST /mastering/presets`, `DELETE /mastering/presets/{id}`, `POST /mastering/jobs`, `DELETE /mastering/jobs/{id}` |
 | `stems:write`, `audio:write`, `queue:read` | stem separation and the audio processing queue, see the contract |
 
 A missing scope answers `403` with `code: insufficient-scope`. Give an integration only what it needs: converting needs `convert:write` and `convert:read`; importing songs into your notebook adds `carnet:write`.
@@ -214,6 +276,12 @@ Stem separation has its own counter (10 per day free, 200 per day Premium), and 
 | GET, PUT, PATCH, DELETE | `/me/songs/{songId}` | `carnet:read`, `carnet:write` | One song |
 | GET, POST | `/me/playlists` | `carnet:read`, `carnet:write` | List or create playlists |
 | GET, PUT, PATCH, DELETE | `/me/playlists/{playlistId}` | `carnet:read`, `carnet:write` | One playlist |
+| GET | `/mastering/capabilities` | none | Limits, setting ranges, loudness targets, built-in presets, and (with a key) whether you may render and your balance |
+| GET, POST | `/mastering/presets` | `mastering:read`, `mastering:write` | List or save your Mastering presets |
+| DELETE | `/mastering/presets/{id}` | `mastering:write` | Delete a preset |
+| POST | `/mastering/jobs` | `mastering:write` | Upload an audio file and start its mastering |
+| GET, DELETE | `/mastering/jobs/{id}` | `mastering:read`, `mastering:write` | Job state with the loudness before and after, or cancel and erase |
+| GET | `/mastering/jobs/{id}/result` | `mastering:read` | Download the mastered WAV |
 | GET | `/users/{handle}`, `/users/{handle}/songs`, `/users/{handle}/playlists`, `/me/followers`, `/me/following` | `social:read` | Read-only view of published profiles |
 
 The contract also covers the audio processing queue (`/audio`, `/queue`) and stem separation (`/stem-tool/*`). There is no social write: following, publishing and liking stay gestures made in the app (the only exception is the `publish` field on a song you own, with an explicit rights declaration).
@@ -250,7 +318,7 @@ Revoke the key in the app when the task is done.
 
 ### Official MCP server
 
-For assistants that speak the [Model Context Protocol](https://modelcontextprotocol.io) (Claude Desktop, Claude Code, Cursor and other MCP clients), the official server [`@jam-jam/convert-mcp`](https://www.npmjs.com/package/@jam-jam/convert-mcp) exposes the same API as typed tools: conversion, your notebook (read and write) and public profiles. It only offers the tools that the scopes of your key allow.
+For assistants that speak the [Model Context Protocol](https://modelcontextprotocol.io) (Claude Desktop, Claude Code, Cursor and other MCP clients), the official server [`@jam-jam/convert-mcp`](https://www.npmjs.com/package/@jam-jam/convert-mcp) exposes the same API as typed tools: conversion, your notebook (read and write), public profiles and Mastering. It only offers the tools that the scopes of your key allow.
 
 ```json
 {
@@ -263,6 +331,8 @@ For assistants that speak the [Model Context Protocol](https://modelcontextproto
   }
 }
 ```
+
+The same server masters audio: `jj_mastering_capabilities`, `jj_list_mastering_presets`, `jj_create_mastering_preset`, `jj_master_audio` (a file, with a preset or inline settings) and `jj_mastering_get_job`, with the `mastering:read` and `mastering:write` scopes. You can ask an assistant: "Master `~/Music/mix.wav` with the warm preset and tell me the loudness before and after."
 
 The key goes in the environment, never on a command line. Full list of tools and options: the [package page](https://www.npmjs.com/package/@jam-jam/convert-mcp) and [jam-jam.org/developers](https://jam-jam.org/developers/?utm_source=github&utm_medium=repo&utm_campaign=api-examples).
 

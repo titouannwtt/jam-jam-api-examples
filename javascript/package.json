@@ -12,6 +12,7 @@
     "formats": "node list-formats.mjs",
     "usage": "node usage.mjs",
     "convert": "node convert.mjs text",
-    "notebook": "node notebook.mjs list"
+    "notebook": "node notebook.mjs list",
+    "mastering": "node mastering.mjs capabilities"
   }
 }
