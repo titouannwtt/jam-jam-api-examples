@@ -1,0 +1,14 @@
+{
+  "modules": {
+    "autoEq":   { "value": 50, "enabled": true },
+    "lows":     { "value": 2, "enabled": true },
+    "mids":     { "value": -0.5, "enabled": true },
+    "highs":    { "value": -1.5, "enabled": true },
+    "deEss":    { "value": 40, "enabled": true },
+    "width":    { "value": 10, "enabled": true },
+    "loudness": { "value": 45, "enabled": true },
+    "destruct": { "value": 0, "enabled": false }
+  },
+  "target": "streaming",
+  "normalize": false
+}
