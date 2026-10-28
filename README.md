@@ -17,7 +17,7 @@
 
 Runnable examples for the [Jam Jam](https://jam-jam.org/?utm_source=github&utm_medium=repo&utm_campaign=api-examples) REST API, in `curl`, JavaScript (Node 20+, no dependency) and Python (3.10+, `requests`). The API turns music files, links and text into a songbook (chords, lyrics, structure) or into portable exports, with the same conversion engine as the Jam Jam app.
 
-What comes out: Jam Jam's songbook format, PDF, plain text, ChordPro, PNG, HTML, synced lyrics (`.lrc`, `.srt`), and, from a source that carries a melody, MIDI and MusicXML. The API can also read and write your private notebook (songs and playlists) read what other accounts have published, and [master an audio file](#mastering) on the server.
+What comes out: Jam Jam's songbook format, PDF, plain text, ChordPro, PNG, HTML, synced lyrics (`.lrc`, `.srt`), and, from a source that carries a melody, MIDI and MusicXML. The API can also read and write your private notebook (songs and playlists), read what other accounts have published, and [master an audio file](#mastering) on the server.
 
 - **Base URL:** `https://jam-jam.org/api/v1`
 - **Contract (OpenAPI 3):** <https://jam-jam.org/api/v1/openapi.json> (source of truth, read it for every field)
