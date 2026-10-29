@@ -35,7 +35,7 @@ def main():
     choice = p_master.add_mutually_exclusive_group()
     choice.add_argument("--preset")
     choice.add_argument("--settings")
-    p_master.add_argument("--format", default="wav-pcm16", choices=["wav-pcm16", "wav-f32"])
+    p_master.add_argument("--format", default="wav-pcm16", choices=["wav-pcm16", "wav-pcm24", "wav-f32"])
     p_delete = sub.add_parser("delete")
     p_delete.add_argument("kind", choices=["job", "preset"])
     p_delete.add_argument("id")

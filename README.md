@@ -165,10 +165,10 @@ The job fields used here: `id`, `phase` (`queued`, `running`, `done`, `failed`, 
 Jam Jam masters your track on the server: it analyses the file, balances the tone, tames sibilance, adjusts the stereo width and brings the level to a loudness target (streaming, podcast, club...), with the same settings as the free web tool at <https://jam-jam.org/app/mastering> (the server render is reproducible, but not bit for bit the browser export). Upload an audio file, pick a preset, download a 48 kHz WAV. On the server, the same file, settings and `engineVersion` give the same output.
 
 - **Input:** WAV, MP3, FLAC, Ogg, AAC, M4A and similar, 200 MB and 10 minutes at most. Mono or stereo (beyond two channels, the first two are used).
-- **Output:** a WAV at 48 kHz, 16-bit (`format=wav-pcm16`, the default) or 32-bit float (`wav-f32`), named `<name>-master.wav`. Kept for 24 hours; downloading again is free.
+- **Output:** a WAV at 48 kHz, 16-bit (`format=wav-pcm16`, the default), 24-bit (`wav-pcm24`) or 32-bit float (`wav-f32`), named `<name>-master.wav`. Kept for 24 hours; downloading again is free.
 - **Presets:** five are built in and read-only, used as `preset=builtin:<id>`: `builtin:balanced`, `builtin:warm`, `builtin:bright`, `builtin:punchy`, `builtin:crushed`. You can save up to 50 of your own (name of 60 characters at most) and use their uuid. Or send the settings inline as `settings`. A render takes exactly one of `preset` and `settings`.
 - **Settings** (`MasteringSettingsV1`): `autoEq`, `lows`, `mids`, `highs`, `deEss`, `width`, `loudness`, `destruct` (each a `value` and `enabled`), a `target` (`streaming`, `apple`, `deezer`, `podcast`, `club`) and `normalize`. Ranges and steps are in `GET /mastering/capabilities`; a value outside its range or off its step answers `422 invalid-settings` with one entry per problem. Example: [`samples/mastering-settings.json`](samples/mastering-settings.json).
-- **Access and quota:** what your account may do, and the render quota, depend on your tier: see <https://jam-jam.org/app/developers>. `GET /mastering/capabilities` with your key tells you (`renderAllowed`, `quota`), and a render answers `X-Mastering-Quota-*` headers.
+- **Access and quota:** rendering is open to every account, free or Premium. A free account gets 3 renders per ISO week (resets Monday 00:00 UTC), on the same counter as the web tool; Premium has no cap. Beyond, a render answers `429 quota-exhausted`, checked before the upload. A render is counted when submitted and refunded if it fails or is cancelled. `GET /mastering/capabilities` with your key tells you (`renderAllowed`, `quota`), and a render answers `X-Mastering-Quota-*` headers.
 - **Idempotency:** `Idempotency-Key` is required on every Mastering write: 16 to 80 characters among `A-Za-z0-9_-` (the examples use a fresh UUID). Replaying it with the same body returns the same result without a second charge.
 
 The flow is the one of a conversion: `POST /mastering/jobs` (`202`), poll `GET /mastering/jobs/{id}` honouring `Retry-After` until `status` is `done` (it goes through `queued`, `decoding`, `analyzing`, `rendering`; the other final states are `failed`, `cancelled` and `expired`), then `GET /mastering/jobs/{id}/result`. The finished job carries a `report` with the loudness before and after. An account has one active render and three waiting at most.
@@ -258,7 +258,7 @@ Three independent counters, taken from the contract. The exact balance, window a
 | Reads (`/me/songs*`, `/me/playlists*`, `/users/*`, followers) | 2000 per day | 20000 per day | none |
 | Notebook writes | 200 per day | 5000 per day | none |
 
-Stem separation has its own counter (10 per day free, 200 per day Premium), and API keys need Premium for it. Going over a limit answers `429` with a `Retry-After` header: wait that long instead of retrying in a loop.
+Stem separation has its own counters, and API keys need a Premium account for it: 200 per UTC day with `POST /jobs` and `output=stems`; on `/stem-tool/*`, 10 per day and 100 per month with the `fast` model, 2 per day and 10 per month with `quality`. Mastering renders have their own counter too (see [Mastering](#mastering)). Going over a limit answers `429` with a `Retry-After` header: wait that long instead of retrying in a loop.
 
 ## Main endpoints
 
