@@ -1,6 +1,6 @@
 // Masters every audio file of a folder with one preset, one after the other.
 //
-//   node mastering-batch.mjs <input_dir> [--out out] [--preset builtin:balanced | --settings settings.json] [--format wav-pcm16|wav-f32]
+//   node mastering-batch.mjs <input_dir> [--out out] [--preset builtin:balanced | --settings settings.json] [--format wav-pcm16|wav-pcm24|wav-f32]
 //
 // Files are sent one at a time (the API keeps one active job and three waiting per account). A file whose
 // <name>-master.wav is already in the output folder is skipped, so the script can be run again after an

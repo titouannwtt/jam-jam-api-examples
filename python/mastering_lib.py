@@ -31,6 +31,8 @@ def explain(err: ApiError) -> str:
         hint = "The result expired: files are kept 24 hours."
     elif err.status == 413:
         hint = "File too large: 200 MB at most."
+    elif err.status == 429 and code == "quota-exhausted":
+        hint = f"Render quota spent: 3 per ISO week on a free account (resets Monday 00:00 UTC, same counter as the web tool), unlimited with Premium. Wait {err.retry_after or 'a little'} s."
     elif err.status == 429:
         hint = f"Too many requests or quota spent. Wait {err.retry_after or 'a little'} s before trying again."
     else:

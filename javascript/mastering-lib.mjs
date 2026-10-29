@@ -21,6 +21,7 @@ export function explain(err) {
   else if (err.status === 409 && code === 'not-ready') hint = 'The render is not finished yet.';
   else if (err.status === 410) hint = 'The result expired: files are kept 24 hours.';
   else if (err.status === 413) hint = 'File too large: 200 MB at most.';
+  else if (err.status === 429 && code === 'quota-exhausted') hint = `Render quota spent: 3 per ISO week on a free account (resets Monday 00:00 UTC, same counter as the web tool), unlimited with Premium. Wait ${err.retryAfter ?? 'a little'} s.`;
   else if (err.status === 429) hint = `Too many requests or quota spent. Wait ${err.retryAfter ?? 'a little'} s before trying again.`;
   const lines = [err.message];
   if (hint) lines.push(hint);

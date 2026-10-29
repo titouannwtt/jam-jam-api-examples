@@ -1,7 +1,7 @@
 """Masters every audio file of a folder with one preset, one after the other.
 
   python mastering_batch.py <input_dir> [--out out] [--preset builtin:balanced | --settings settings.json]
-                            [--format wav-pcm16|wav-f32]
+                            [--format wav-pcm16|wav-pcm24|wav-f32]
 
 Files are sent one at a time (the API keeps one active job and three waiting per account). A file whose
 <name>-master.wav is already in the output folder is skipped, so the script can be run again after an
@@ -50,7 +50,7 @@ def main():
     choice = parser.add_mutually_exclusive_group()
     choice.add_argument("--preset")
     choice.add_argument("--settings")
-    parser.add_argument("--format", default="wav-pcm16", choices=["wav-pcm16", "wav-f32"])
+    parser.add_argument("--format", default="wav-pcm16", choices=["wav-pcm16", "wav-pcm24", "wav-f32"])
     args = parser.parse_args()
 
     need_key()

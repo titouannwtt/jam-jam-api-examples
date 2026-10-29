@@ -43,6 +43,7 @@ explain_error() {
     410:*) echo "The result expired: files are kept 24 hours." >&2 ;;
     413:*) echo "File too large: 200 MB at most." >&2 ;;
     422:*) echo "Rejected (invalid settings, idempotency conflict or audio longer than 10 minutes). Details below." >&2 ;;
+    429:quota-exhausted) echo "Render quota spent: 3 per ISO week on a free account (resets Monday 00:00 UTC, same counter as the web tool), unlimited with Premium. Wait ${retry:-a little} s." >&2 ;;
     429:*) echo "Too many requests or quota spent. Wait ${retry:-a little} s before trying again." >&2 ;;
   esac
   cat "$body" >&2
